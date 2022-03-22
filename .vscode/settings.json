@@ -3,6 +3,8 @@
         "*.tcc": "cpp",
         "numeric": "cpp",
         "iostream": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "functional": "cpp",
+        "climits": "cpp"
     }
 }
