@@ -7,9 +7,17 @@ type Result<T, E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
 fn get<T: FromStr>() -> Result<T, T::Err> {
     fn a(res: Result<String, std::io::Error>) -> Option<SplitWhitespace<'static>> {
-        res.ok().map(|s| Box::leak(s.into_boxed_str()).split_whitespace())
+        res.ok()
+            .map(|s| Box::leak(s.into_boxed_str()).split_whitespace())
     }
-    type It = std::cell::RefCell<std::iter::Flatten<std::iter::FilterMap<std::io::Lines<std::io::BufReader<std::io::Stdin>>,fn(Result<String,std::io::Error>)->Option<SplitWhitespace< 'static>>>>>;
+    type It = std::cell::RefCell<
+        std::iter::Flatten<
+            std::iter::FilterMap<
+                std::io::Lines<std::io::BufReader<std::io::Stdin>>,
+                fn(Result<String, std::io::Error>) -> Option<SplitWhitespace<'static>>,
+            >,
+        >,
+    >;
     thread_local! {
         static IT: It = RefCell::new(BufReader::new(stdin()).lines().filter_map(a as fn(_) -> _).flatten());
     }
@@ -30,7 +38,7 @@ fn solve() -> Result<()> {
     visited.insert(num);
     let mut passages: usize = get()?;
     let mut rolled = false;
-    for _ in 0..(k/2) {
+    for _ in 0..(k / 2) {
         while visited.contains(&num) {
             num += 1;
         }

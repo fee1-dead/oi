@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::io::{stdin, BufRead, BufReader};
 use std::str::{FromStr, SplitWhitespace};
 type Result<T = (), E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
@@ -32,45 +33,42 @@ fn main() -> Result {
     Ok(())
 }
 
-fn out(v: Vec<String>) {
-    let mut begin = "";
-    let mut end = "";
-    let err = || println!("*");
-    for s in &v {
-        let mut split = s.split('*');
-        if let Some(n) = split.next() {
-            if n.len() > begin.len() {
-                if n.starts_with(begin) {
-                    begin = n;
-                } else {
-                    return err();
-                }
-            } else if !begin.starts_with(n) {
-                return err();
-            }
-        }
-        if let Some(n) = split.next_back() {
-            if n.len() > end.len() {
-                if n.ends_with(end) {
-                    end = n;
-                } else {
-                    return err();
-                }
-            } else if !end.ends_with(n) {
-                return err();
-            }
-        }
-    }
-    let mut s = begin.to_owned();
-    v.iter()
-        .flat_map(|s| {
-            let mut sp = s.split('*');
-            sp.next();
-            sp.next_back();
-            sp
-        })
-        .for_each(|subs| s.push_str(subs));
+fn out(mut s: Vec<String>) {
+    let prevlen = s.len();
+    s.iter_mut().for_each(|s| *s = s.chars().rev().collect());
+    s.sort_unstable();
 
-    s.push_str(end);
-    println!("{}", s);
+    let mut prefixes_used = HashSet::new();
+
+    while !s.is_empty() {
+        let mut max_prefix = (String::new(), std::usize::MAX);
+        for (idx, w) in s.windows(2).enumerate() {
+            let a = &w[0];
+            let b = &w[1];
+            let mut s: String = a
+                .chars()
+                .zip(b.chars())
+                .take_while(|(a, b)| a == b)
+                .map(|(a, _)| a)
+                .collect();
+            while prefixes_used.contains(&s) {
+                s.pop();
+            }
+
+            if s.len() > max_prefix.0.len() {
+                max_prefix = (s, idx)
+            }
+        }
+
+        if max_prefix.1 == std::usize::MAX {
+            break;
+        }
+
+        prefixes_used.insert(max_prefix.0);
+
+        s.remove(max_prefix.1);
+        s.remove(max_prefix.1);
+    }
+
+    println!("{}", prevlen - s.len());
 }

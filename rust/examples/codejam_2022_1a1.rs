@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::io::{stdin, BufRead, BufReader};
+use std::iter::repeat;
 use std::str::{FromStr, SplitWhitespace};
 type Result<T, E = Box<dyn std::error::Error>> = std::result::Result<T, E>;
 
@@ -23,33 +24,24 @@ fn get<T: FromStr>() -> Result<T, T::Err> {
 }
 fn main() -> Result<()> {
     for i in 1..=get()? {
-        println!("Case #{}:", i);
-        out(get()?, get()?);
+        print!("Case #{}: ", i);
+        out(get()?);
     }
     Ok(())
 }
 
-fn out(rows: u8, columns: u8) {
-    for row in 0..rows {
-        for column in 0..columns {
-            if let (0, 0) = (row, column) {
-                print!("..");
-            } else {
-                print!("+-");
-            }
+fn out(mut s: String) {
+    let mut i = 0;
+    while i < s.len() {
+        let news = s
+            .chars()
+            .enumerate()
+            .flat_map(|(idx, c)| repeat(c).take(if idx == i { 2 } else { 1 }));
+        if news.clone().lt(s.chars()) {
+            s = news.collect();
+            i += 1;
         }
-        println!("+");
-        for column in 0..columns {
-            if let (0, 0) = (row, column) {
-                print!("..");
-            } else {
-                print!("|.");
-            }
-        }
-        println!("|");
+        i += 1;
     }
-    for _ in 0..columns {
-        print!("+-");
-    }
-    println!("+");
+    println!("{}", s);
 }
